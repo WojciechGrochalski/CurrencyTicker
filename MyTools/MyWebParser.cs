@@ -52,7 +52,7 @@ namespace AngularApi.MyTools
                 SendTodayCurrencyToSubscribers(_context, _mailService, _listOfValue);
                 CheckAndSendAlert(_context, _mailService, _listOfValue);
             }
-           
+            
         }
 
         // Verify IF database was already updated today
@@ -92,8 +92,8 @@ namespace AngularApi.MyTools
         }
         private string MakeMessageForAlert(string iso, string price,float value)
         {
-            return $@"<h4>Alert walutowy dla {iso}</h4>
-                             <h5> Cena {price} {iso} z dnia {DateTime.Now.ToShortDateString()} to: </h5>
+            return $@"<h3>Alert walutowy dla {iso}</h3>
+                             <h4> Cena {price} {iso} z dnia {DateTime.Now.ToShortDateString()} to: </h4>
                                 <h3>{value}</h3>";
                              
         }
