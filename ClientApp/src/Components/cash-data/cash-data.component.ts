@@ -2,6 +2,7 @@ import {Component} from '@angular/core';
 import *as apex from 'ng-apexcharts';
 import {CashService} from '../../Services/cash.service';
 import { Cash } from '../../Models/Cash';
+import {UserService} from "../../Services/User.service";
 
 @Component({
   selector: 'app-cash-data',
@@ -23,7 +24,9 @@ export class CashDataComponent {
   public bidPrice: number[] = [];
 
 
-  constructor( private cashService: CashService) {
+  constructor(
+    private cashService: CashService,
+   private userService: UserService  ) {
 
     this.title = {
       text: 'Waluty'
@@ -44,6 +47,7 @@ export class CashDataComponent {
   }
 
   async ngOnInit(): Promise<void> {
+    this.userService.SendBaseUrl().subscribe();
     try {
       this.cash_list = await this.cashService.GetDataOnInit().toPromise();
     } catch (e) {

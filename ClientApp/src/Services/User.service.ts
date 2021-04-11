@@ -1,5 +1,5 @@
 import {Inject, Injectable} from '@angular/core';
-import {HttpClient, HttpHandler, HttpHeaders, HttpRequest} from "@angular/common/http";
+import {HttpClient} from "@angular/common/http";
 import {BaseUrlModel} from "../Models/BaseUrlModel";
 import {Remainder} from "../Models/Remainder";
 import {Observable} from "rxjs";
@@ -29,11 +29,17 @@ export class UserService {
     return this.http.post(this.BaseUrl + 'User/baseUrl', url );
   }
 
-  GetSubscription(userID: number){
+  AddSubscription(userID: number){
     return this.http.get<any>(this.BaseUrl + 'User/sub/'+userID);
+  }
+  RemoveSubscription(userID: number){
+    return this.http.get<any>(this.BaseUrl + 'User/remove/sub/'+userID);
   }
   SetAlert(alert :Remainder){
     return this.http.post<any>(this.BaseUrl + 'User/addAlert', alert);
+  }
+  GetAlerts(userID: number){
+    return this.http.get<any>(this.BaseUrl + 'User/alerts/'+userID);
   }
   VerifyUser(token: string): Observable<any> {
     let jwtToken = new Token(token);

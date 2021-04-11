@@ -1,4 +1,8 @@
-import { Component } from '@angular/core';
+import {Component, OnInit} from '@angular/core';
+import { Router} from "@angular/router";
+
+import {AuthService} from "../../Services/auth.service";
+
 
 @Component({
   selector: 'app-nav-menu',
@@ -15,4 +19,7 @@ export class NavMenuComponent {
   toggle() {
     this.isExpanded = !this.isExpanded;
   }
+
+
+
 }

@@ -46,9 +46,7 @@ import {AuthGuard} from "../Services/auth-guard.service";
     NgApexchartsModule,
     FlashMessagesModule.forRoot(),
     RouterModule.forRoot([
-      { path: '', component: HomeComponent, pathMatch: 'full' },
-      { path: '', component: HomeComponent },
-      { path: 'cash-data', component: CashDataComponent },
+      { path: '', component: CashDataComponent, pathMatch: 'full' },
       { path: 'user-profile', component: UserProfileComponent , canActivate: [AuthGuard] },
       { path: 'user-profile/:message', component: UserProfileComponent, canActivate: [AuthGuard] },
       { path: 'login', component: LogInComponent},

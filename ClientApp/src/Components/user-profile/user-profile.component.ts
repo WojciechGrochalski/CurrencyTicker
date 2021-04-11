@@ -5,9 +5,7 @@ import {FlashMessagesService} from "angular2-flash-messages";
 import {Cash} from "../../Models/Cash";
 import {CashService} from "../../Services/cash.service";
 import {AuthService} from "../../Services/auth.service";
-import {error} from "@angular/compiler/src/util";
-import {EMPTY, pipe, throwError} from "rxjs";
-import {catchError, tap} from "rxjs/operators";
+import {Remainder} from "../../Models/Remainder";
 
 
 @Component({
@@ -17,11 +15,12 @@ import {catchError, tap} from "rxjs/operators";
 })
 export class UserProfileComponent implements OnInit {
   public cash_list: Cash[];
+  public remainders: Remainder[];
   message:string;
   askPrice: number[] = [];
- bidPrice: number[] = [];
+  bidPrice: number[] = [];
   alert:boolean;
-  subscription:boolean;
+  subscriptions:boolean=false;
 
   constructor(private route: ActivatedRoute,
               private userService: UserService,
@@ -31,43 +30,48 @@ export class UserProfileComponent implements OnInit {
               private cashService: CashService  ) { }
 
   async ngOnInit() {
+    let user=JSON.parse(localStorage.getItem('currentUser'));
+    this.subscriptions=user.sub;
     try {
+
       this.cash_list = await this.cashService.GetDataOnInit().toPromise();
+      this.remainders= await this.userService.GetAlerts(user.id).toPromise();
       let message = this.route.snapshot.paramMap.get('message');
       if(message) {
         this.flashMessagesService.show(message, {cssClass: 'alert-success', timeout: 5000})
       }
     } catch (e) {
       console.error(e);
-
     }
+    console.log(this.remainders)
+
   }
 
-  SetAlert(){
-    this.subscription=false;
-    this.alert=true;
-  }
-  SetSubscription(){
-    this.subscription=true;
-    this.alert=false;
-  }
 
   AddSubscription(){
     let user=JSON.parse(localStorage.getItem('currentUser'));
-      this.userService.GetSubscription(user.id).subscribe(res => {
-        this.flashMessagesService.show(res.message, {cssClass: 'alert-success', timeout: 3000})
-      })
-    }
+    this.userService.AddSubscription(user.id).subscribe(res => {
+      this.flashMessagesService.show(res.message, {cssClass: 'alert-success', timeout: 3000})
+    })
+    this.subscriptions=true;
+  }
+  RemoveSubscription(){
+    let user=JSON.parse(localStorage.getItem('currentUser'));
+    this.userService.RemoveSubscription(user.id).subscribe(res => {
+      this.flashMessagesService.show(res.message, {cssClass: 'alert-success', timeout: 3000})
+    })
+    this.subscriptions=false;
+  }
 
 
 
   SetPriceAlert(iso: string, price:string){
     this.router.navigate(['/set-alert/'+iso+'/'+price]);
   }
-Logout(){
+  Logout(){
     this._authService.logout();
-  this.router.navigate(['/']);
-}
+    this.router.navigate(['/']);
+  }
 
 
 }

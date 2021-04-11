@@ -1,53 +1,62 @@
-<div class="container-fluid">
-<main class="mh-100">
-  <div class="sidebar">
-    <h2 class="header-title">Panel użytkownika</h2>
+<div class="full-height">
 
-
-    <p>Zarządzanie Alertami</p>
-    <hr class="separator">
-    <ul class="sidemenu nav">
-      <li><i class="fas fa-th-list"></i><a (click)="SetSubscription()">Subskrybcja</a></li>
-      <li><i class="fas fa-th-list"></i><a (click)="SetAlert()">Alert</a></li>
-    </ul>
-
-    <p>Profil</p>
-    <hr class="separator">
-    <ul class="sidemenu">
-      <li><a >Edytuj</a></li>
-      <li><a (click)="Logout()"> Wyloguj</a></li>
-    </ul>
+  <flash-messages></flash-messages>
+  <div class="banner">
+    <h3>
+      <a (click)="Logout()"> Wyloguj</a>
+    </h3>
   </div>
-  <div class="main-panel">
-    <flash-messages></flash-messages>
-    <div class="container" *ngIf="alert">
-
-        <div class="albums">
-          <div class="card-columns">
-            <div class="card" *ngFor="let item of cash_list" >
-              <div class="card-body" >
-                <h5 class="card-title"> {{item.Code}} / PLN </h5>
-                <div class="d-inline-block" (click)="SetPriceAlert(item.Code,'More')">
-                <span class="card-text"> Sprzedaj za: {{item.BidPrice.toFixed(4)}} &nbsp;</span>
-                </div>
-                <div class="vline d-inline-block"></div>
-                <div class="d-inline-block" (click)="SetPriceAlert(item.Code,'Less')">
-                <span class="card-text"> Kup za {{item.AskPrice.toFixed(4)}}</span>
-                </div>
-              </div>
+  <br><br>
+  <div  class="container">
+    <h3>Subskrybcje</h3>
+    <div *ngIf="subscriptions">
+      <input type="submit" (click)="RemoveSubscription()" value="Anuluj Subskrybcje">
+    </div>
+    <div *ngIf="!subscriptions">
+      <input type="submit" (click)="AddSubscription()" value="Dodaj Subskrybcję">
+    </div>
+  </div>
+  <div *ngIf="remainders">
+    <div class="container"  *ngIf="remainders.length>0">
+      <h3>Twoje Alerty</h3>
+      <div class="albums">
+        <div class="card-columns">
+          <div class="card" *ngFor="let alert of remainders" >
+            <div class="card-body" >
+              <h5 class="card-title"> {{alert.code}} / PLN </h5>
+              <p *ngIf="alert.bidPrice" class="card-text"> Alert na cene sprzedaży, przy: {{alert.bidPrice.toFixed(2)}}PLN  </p>
+              <p *ngIf="alert.askPrice" class="card-text"> Alert na cene kupna, przy: {{alert.askPrice.toFixed(2)}}PLN </p>
+              <p  class="card-text"> Wygasa {{alert.endDateOfAlert.slice(0,-9)}}</p>
             </div>
+            <!--                    <span class="card-text"> Kup za {{item.AskPrice.toFixed(4)}}</span>-->
           </div>
-
+        </div>
       </div>
     </div>
-    <div *ngIf="subscription">
-       <h3>Dodaj subskrybcje codziennego kursu waluty</h3>
-        <input type="submit" (click)="AddSubscription()" >
-        <label>Akceptuj subskrybcje</label>
-    </div>
-<!--    <router-outlet></router-outlet>-->
   </div>
 
-</main>
+  <div class="container last" >
+    <h3>Dodaj Alert</h3>
+    <div class="albums">
+      <div class="card-columns">
+        <div class="card" *ngFor="let item of cash_list" >
+          <div class="card-body" >
+            <h5 class="card-title"> {{item.Code}} / PLN </h5>
+            <div class="d-inline-block" (click)="SetPriceAlert(item.Code,'More')">
+              <span class="card-text"> Sprzedaj za: {{item.BidPrice.toFixed(4)}} &nbsp;</span>
+            </div>
+            <div class="vline d-inline-block"></div>
+            <div class="d-inline-block" (click)="SetPriceAlert(item.Code,'Less')">
+              <span class="card-text"> Kup za {{item.AskPrice.toFixed(4)}}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
 </div>
+
+
 

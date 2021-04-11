@@ -62,8 +62,10 @@ namespace angularapi.Controllers
             {
                 ID = user.ID,
                 Name = user.Name,
+                Sub = user.Subscriptions,
                 AccessToken = TokenManager.GenerateAccessToken(user.Name),
                 RefreshToken = refreshToken
+                
             });
         }
         [Authorize(AuthenticationSchemes = "refresh")]
@@ -85,14 +87,6 @@ namespace angularapi.Controllers
             {
                 return BadRequest(e.Message);
             }
-        }
-        [HttpPost("sub")]
-        public async Task<IActionResult> AddSubscribtion(Remainder subb)
-        {
-            _context.Remainders.Add(subb);
-            _context.SaveChanges();
-            await Task.CompletedTask;
-            return Ok();
         }
 
         [HttpPost("resetPassword")]
@@ -192,9 +186,14 @@ namespace angularapi.Controllers
             user.Subscriptions = false;
             _context.Entry(user).CurrentValues.SetValues(user);
             _context.SaveChanges();
-            return Ok(new { message = "Usnieto cię z subskrybcji" });
+            return Ok(new { message = "Usunięto cię z subskrybcji" });
         }
-
+        [HttpGet("alerts/{userID}")]
+        public List<Remainder> GetsUserAlerts(int userID)
+        {
+            var alerts = _context.Remainders.Where(p => p.UserID == userID).ToList();
+            return alerts;
+        }
         [HttpPost("addAlert")]
         public IActionResult AddAlert([FromBody] Remainder remainder)
         {
