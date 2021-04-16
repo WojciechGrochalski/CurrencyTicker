@@ -42,7 +42,7 @@ export class AuthService {
     return false;
   }
   Register(user: CreatedUser) {
-    return this.http.post<any>(this.BaseUrl + 'User', user);
+    return this.http.post<any>(this.BaseUrl + 'Login', user);
   }
 
   ResetPassword(Email: string) {
@@ -50,13 +50,12 @@ export class AuthService {
     return this.http.post<any>(this.BaseUrl + 'User/resetPassword', data);
   }
   SetNewPassword(data: NewPassword) {
-
     return this.http.post<any>(this.BaseUrl + 'User/setPassword', data);
   }
 
 
   login(user: AuthModel) {
-    return this.http.post<LoginResult>(this.BaseUrl + 'User/login', user)
+    return this.http.post<LoginResult>(this.BaseUrl + 'Login/login', user)
       .pipe(map(user => {
         if (user) {
           // store user details and jwt token in local storage to keep user logged in between page refreshes

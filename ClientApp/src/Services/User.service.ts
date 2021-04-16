@@ -25,8 +25,8 @@ export class UserService {
   }
 
   SendBaseUrl(): Observable<any>{
-    let url = new BaseUrlModel(this.BaseUrl);
-    return this.http.post(this.BaseUrl + 'User/baseUrl', url );
+    let url=this.BaseUrl;
+    return this.http.post(this.BaseUrl + `User/baseUrl?url=${url}`, url);
   }
 
   AddSubscription(userID: number){
@@ -36,10 +36,10 @@ export class UserService {
     return this.http.get<any>(this.BaseUrl + 'User/remove/sub/'+userID);
   }
   SetAlert(alert :Remainder){
-    return this.http.post<any>(this.BaseUrl + 'User/addAlert', alert);
+    return this.http.post<any>(this.BaseUrl + 'Alert/addAlert', alert);
   }
   GetAlerts(userID: number){
-    return this.http.get<any>(this.BaseUrl + 'User/alerts/'+userID);
+    return this.http.get<any>(this.BaseUrl + 'Alert/alerts/'+userID);
   }
   VerifyUser(token: string): Observable<any> {
     let jwtToken = new Token(token);
@@ -50,7 +50,7 @@ export class UserService {
     return this.http.post(this.BaseUrl + 'User/verify-resetpassword', jwtToken);
   }
  RefreshToken() {
-    return this.http.get<NewTokens>(this.BaseUrl + 'User/refreshToken').pipe(tap
+    return this.http.get<NewTokens>(this.BaseUrl + 'Token/refreshToken').pipe(tap
     ((tokens:any)=>{
       this.storeJwtToken(tokens);
     }));

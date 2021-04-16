@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using AngularApi.Repository;
 using Microsoft.Extensions.Options;
 
-namespace AngulArapi.MyTools
+namespace angularapi.Services
 {
     public class MailService: IMailService
     {
@@ -19,6 +19,7 @@ namespace AngulArapi.MyTools
         {
             _appSettings = appSettings.Value;
         }
+
         public void SendMail( string to, string subject, string html)
         {
             // create message
@@ -34,6 +35,13 @@ namespace AngulArapi.MyTools
             smtp.Authenticate(_appSettings.SmtpUser, _appSettings.SmtpPass);
             smtp.Send(email);
             smtp.Disconnect(true);
+        }
+        public Tuple<string,string> GenerateMessageForUserVerification(string href, string token)
+        {
+            string subject = "Sign-up Verification API - Verify Email";
+            string message = $@"<p>Please use the below token to verify your email address with the <code>/accounts/verify-email</code> api route:</p>
+                             <p> <a href=""{href}verify-user?token={token}""> link <a/> </p>";
+            return new Tuple<string, string>(subject, message);
         }
     }
 }

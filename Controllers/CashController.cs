@@ -5,16 +5,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using Microsoft.Extensions.Logging;
-using AngularApi.MyTools;
-using AngularApi.Repository;
 using AngularApi.DataBase;
-using Microsoft.EntityFrameworkCore;
-
-using Microsoft.AspNetCore.Cors;
-using System.Globalization;
-using angularapi.MyTools;
 using angularapi.Models;
+using angularapi.Services;
 
 namespace AngularApi.Controllers
 {

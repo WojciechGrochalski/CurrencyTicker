@@ -23,7 +23,7 @@ namespace angularapi.Controllers
         private readonly CashDBContext _context;
         private readonly ILogger<UserController> _logger;
         private IUserService _userService;
-        public static string BaseUrl;
+        public static string ClientBaseUrl = "http://localhost:5001";
         private IMailService _mailService;
         public UserController(CashDBContext context, IUserService userService,
             ILogger<UserController> logger, IMailService mailService)
@@ -34,60 +34,6 @@ namespace angularapi.Controllers
             _mailService = mailService;
         }
 
-        [HttpPost]
-        [AllowAnonymous]
-        public IActionResult Register(UserDBModel user)
-        {
-            try
-            {
-                _userService.CreateAsync(user);
-                return Ok(new { message = "Registration successful, please check your email for verification instructions" });
-            }
-            catch (ApplicationException ex)
-            {
-                // return error message if there was an exception
-                return BadRequest(new { message = ex.Message });
-            }
-        }
-        [HttpPost("login")]
-        [AllowAnonymous]
-        public IActionResult Login(AuthModel model)
-        {
-            (var user, string refreshToken) = _userService.AuthenticateLogin(model.Name, model.Pass);
-            if (user == null)
-            {
-                return BadRequest(new { message = "Username or password is incorrect" });
-            }
-            return Ok(new
-            {
-                ID = user.ID,
-                Name = user.Name,
-                Sub = user.Subscriptions,
-                AccessToken = TokenManager.GenerateAccessToken(user.Name),
-                RefreshToken = refreshToken
-                
-            });
-        }
-        [Authorize(AuthenticationSchemes = "refresh")]
-        [HttpGet("refreshToken", Name = "refresh")]
-        public IActionResult RefreshToken()
-        {
-            Claim refreshToken = User.Claims.FirstOrDefault(x => x.Type == "refresh");
-            Claim username = User.Claims.FirstOrDefault(x => x.Type == "user");
-            try
-            {
-                Tokens tokens = _userService.Refresh(username, refreshToken);
-                return Ok(new
-                {
-                    AccessToken = tokens.AccessToken,
-                    RefreshToken = tokens.RefreshToken
-                });
-            }
-            catch (Exception e)
-            {
-                return BadRequest(e.Message);
-            }
-        }
 
         [HttpPost("resetPassword")]
         [AllowAnonymous]
@@ -103,13 +49,13 @@ namespace angularapi.Controllers
                 return BadRequest(new { message = "Nie istnieje użytkownik o takim emailu" });
             }
             user.ResetPasswordToken = TokenManager.RandomTokenString();
-            
-            string resetPasswordtoken = TokenManager.GenerateResetPassToken(user.ResetPasswordToken,user.Email);
+
+            string resetPasswordtoken = TokenManager.GenerateResetPassToken(user.ResetPasswordToken, user.Email);
             _context.userDBModels.Update(user);
             _context.SaveChanges();
             string message = $@"<p>Wysłano powiadomienie o zresetowaniu hasła</p>
                                 <p>Kliknij link aby dokończyć resetowanie</p>
-                             <p> <a href=""{BaseUrl}new-password?token={resetPasswordtoken}""> link <a/> </p>";
+                             <p> <a href=""{ClientBaseUrl}new-password?token={resetPasswordtoken}""> link <a/> </p>";
             _mailService.SendMail(newPassword.Email, "Resetowanie Hasła", message);
             return Ok(new { message = "Link do zresetowania hasło został wysłany na twój e-mail" });
 
@@ -120,10 +66,10 @@ namespace angularapi.Controllers
         {
             bool result = _userService.VerifyPasswordToken(token.Token);
             string email = TokenManager.ValidateJwtToken(token.Token, "email");
-            
+
             if (result)
             {
-                return Ok(new {email=email });
+                return Ok(new { email = email });
             }
             return BadRequest(new { message = "Token wygasł lub jest nieprawidłowy" });
         }
@@ -144,9 +90,9 @@ namespace angularapi.Controllers
         }
         [HttpPost("verify-email")]
         [AllowAnonymous]
-        public IActionResult VerifyEmail([FromBody] VerifyEmailRequest verifyEmail)
+        public IActionResult VerifyEmail([FromBody] VerifyEmailRequest jwtToken)
         {
-            bool result = _userService.VerifyEmail(verifyEmail.Token);
+            bool result = _userService.VerifyEmail(jwtToken.Token);
             if (result)
             {
                 return Ok(new { message = "Verification successful, you can now login" });
@@ -156,9 +102,9 @@ namespace angularapi.Controllers
 
         [HttpPost("baseUrl")]
         [AllowAnonymous]
-        public IActionResult GetBaseUrl([FromBody] BaseUrlModel baseUrl)
+        public IActionResult GetBaseUrl( string url)
         {
-            BaseUrl = baseUrl.BaseUrl;
+            ClientBaseUrl = url;
             return Ok();
         }
 
@@ -188,32 +134,6 @@ namespace angularapi.Controllers
             _context.SaveChanges();
             return Ok(new { message = "Usunięto cię z subskrybcji" });
         }
-        [HttpGet("alerts/{userID}")]
-        public List<Remainder> GetsUserAlerts(int userID)
-        {
-            var alerts = _context.Remainders.Where(p => p.UserID == userID).ToList();
-            return alerts;
-        }
-        [HttpPost("addAlert")]
-        public IActionResult AddAlert([FromBody] Remainder remainder)
-        {
-            try
-            {
-                var user = _context.userDBModels.FirstOrDefault(s => s.ID == remainder.UserID);
-                if (user != null)
-                {
-                    _context.Remainders.Add(remainder);
-                    _context.SaveChanges();
-                    return Ok(new { message = "Pomyślnie ustawiono alert" });
-                }
-                return BadRequest(new { message = "Nie udało się ustawić alertu, spróbuj ponownie" });
-            }
-            catch (ApplicationException e)
-            {
-                _logger.LogError(e.Message);
-                return BadRequest(new { message = "Nie udało się ustawić alertu, spróbuj ponownie" });
-            }
-
-        }
+       
     }
 }

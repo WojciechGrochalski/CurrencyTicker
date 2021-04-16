@@ -1,7 +1,9 @@
 ﻿using angularapi.Controllers;
 using angularapi.Models;
+using angularapi.MyTools;
 using AngularApi.DataBase;
 using AngularApi.Repository;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -12,99 +14,56 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 
-namespace angularapi.MyTools
+namespace angularapi.Services
 {
     public class UserService : IUserService
     {
         private readonly CashDBContext _context;
+        private readonly IUserAuthenticate _userAuthenticate;
         private readonly ILogger<BackgroundService> _logger;
         private readonly IServiceScopeFactory _scopeFactory;
         private IMailService _mailService;
 
-        string subject = "Sign-up Verification API - Verify Email";
+
         public UserService(CashDBContext context,
             ILogger<BackgroundService> logger,
             IServiceScopeFactory scopeFactory,
-               IMailService mailService)
+               IMailService mailService,
+               IUserAuthenticate userAuthenticate)
         {
             _context = context;
             _logger = logger;
             _scopeFactory = scopeFactory;
             _mailService = mailService;
+            _userAuthenticate = userAuthenticate;
         }
 
 
-        public (UserDBModel,string ) AuthenticateLogin(string username, string password)
+        public (UserDBModel, string) AuthenticateLogin(string username, string password)
         {
-            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
+            if (_userAuthenticate.Authenticate(username, password))
             {
-                return (null,null);
+                var User = _context.userDBModels.FirstOrDefault(q => q.Name == username);
+                _userAuthenticate.RemoveRefreshTokens(User.ID);
+                string jwt = _userAuthenticate.GenerateToken(username, User.ID);
+                return (User, jwt);
             }
-
-            var user = _context.userDBModels.SingleOrDefault(x => x.Name == username);
-
-            // check if username exists
-            if (user == null)
-            {
-                return (null, null);
-            }
-
-            // check if password is correct
-            if (!SecurePasswordHasher.Verify(password, user.Pass))
-            {
-                return (null, null);
-            }
-
-            // authentication successful
-            var rows = _context.refreshTokens.Where(x => x.UserID == user.ID).ToList();
-            foreach (RefreshToken item in rows)
-            {
-                _context.refreshTokens.Remove(item);
-            }
-            _context.SaveChanges();
-   
-            var newToken = TokenManager.GenerateRefreshToken(user.Name);
-            RefreshToken refreshToken = new RefreshToken(newToken.refreshTokenKey,user.ID);
-            _context.refreshTokens.Add(refreshToken);
-            _context.SaveChanges();
-            return (user, newToken.jwt);
+            return (null, null);
         }
         public UserDBModel CreateAsync(UserDBModel user)
         {
             // validation
-            if (string.IsNullOrWhiteSpace(user.Pass))
-            {
-                throw new ApplicationException("Password is required");
-            }
+            _userAuthenticate.ValidateUser(user);
+            var newUser = _userAuthenticate.AddUserToDatabase(user);
 
-            if (_context.userDBModels.Any(x => x.Name == user.Name))
-            {
-                throw new ApplicationException("Username " + user.Name + " is already taken");
-            }
-            if (_context.userDBModels.Any(x => x.Email == user.Email))
-            {
-                throw new ApplicationException("Email " + user.Email + " is already taken");
-            }
-
-            string PasswordHash = SecurePasswordHasher.Hash(user.Pass);
-
-            user.Pass = PasswordHash;
-            user.Created = DateTime.Now;
-            user.IsVerify = false;
-            user.VeryficationToken = TokenManager.RandomTokenString();
-            _context.userDBModels.Add(user);
-            _context.SaveChanges();
-
-            string message = $@"<p>Please use the below token to verify your email address with the <code>/accounts/verify-email</code> api route:</p>
-                             <p> <a href=""{UserController.BaseUrl}verify-user?token={TokenManager.GenerateRegisterToken(user.VeryficationToken)}""> link <a/> </p>";
-
-            _mailService.SendMail(user.Email, subject, message);
+            var newMessage = _mailService.GenerateMessageForUserVerification(UserController.ClientBaseUrl, TokenManager.GenerateRegisterToken(newUser.VeryficationToken));
+            _mailService.SendMail(newUser.Email, newMessage.Item1, newMessage.Item2);
             BackgroundTask task = new BackgroundTask(_logger, _scopeFactory);
             Task.Factory.StartNew(() => task.RemoveUnverifiedUserAsync(user.VeryficationToken));
 
             return user;
         }
-        public bool VerifyEmail(string token)
+        public bool VerifyEmail([FromBody]string token)
         {
             try
             {
@@ -172,8 +131,8 @@ namespace angularapi.MyTools
 
             if (token != null)
             {
-                
-                var newToken= TokenManager.GenerateRefreshToken(user.Name);
+
+                var newToken = TokenManager.GenerateRefreshToken(user.Name);
                 RefreshToken refreshToken = new RefreshToken(newToken.refreshTokenKey, user.ID);
 
                 _context.refreshTokens.Add(refreshToken);

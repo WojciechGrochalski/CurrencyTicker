@@ -15,7 +15,7 @@ using Microsoft.Extensions.DependencyInjection;
 using TimeZoneConverter;
 using angularapi.Models;
 
-namespace AngularApi.MyTools
+namespace angularapi.Services
 {
 
     public class UpdateFileService : IHostedService

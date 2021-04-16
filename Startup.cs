@@ -1,4 +1,4 @@
-using angularapi.MyTools;
+
 using AngularApi.MyTools;
 using AngularApi.Repository;
 using Microsoft.AspNetCore.Builder;
@@ -13,8 +13,8 @@ using System;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using AngulArapi.MyTools;
 using System.Threading.Tasks;
+using angularapi.Services;
 
 namespace AngularApi
 {
@@ -50,6 +50,7 @@ namespace AngularApi
             services.AddScoped<IWebParser, MyWebParser>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IMailService, MailService>();
+            services.AddScoped<IUserAuthenticate, UserAuthenticateService>();
             services.AddCors();
 
 
