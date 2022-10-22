@@ -41,10 +41,11 @@ namespace AngularApi
             });
             //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
             //>>>>>>>>>>>>>>>Data base >>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-            // var connection = @"Server=(localdb)\mssqllocaldb;Database=CashDB;Trusted_Connection=True;ConnectRetryCount=0";
-
+            var connection = @"Server=(localdb)\MSSQLLocalDB;Initial Catalog=master;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
             services.AddDbContext<CashDBContext>(options =>
-                    options.UseSqlServer(Configuration.GetConnectionString("MyAzureDataBase")));
+                    options.UseSqlServer(Configuration.GetConnectionString("LocalDB")));
+            //services.AddDbContext<CashDBContext>(options =>
+            //        options.UseSqlServer(Configuration.GetConnectionString("MyAzureDataBase")));
 
             services.AddHostedService<UpdateFileService>();
             services.AddScoped<IWebParser, MyWebParser>();
@@ -78,13 +79,13 @@ namespace AngularApi
                         {
                             if (context.Exception.GetType() == typeof(SecurityTokenExpiredException))
                             {
-                                context.Response.Headers.Add("Token-Expired", "true");   
+                                context.Response.Headers.Add("Token-Expired", "true");
                             }
                             return Task.CompletedTask;
                         }
                     };
                 }
-              
+
                 return jwtBearerOptions;
             }
 
@@ -94,7 +95,7 @@ namespace AngularApi
                 x.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             })
             .AddJwtBearer(jwtBearerOptions => options(jwtBearerOptions, "access"))
-            .AddJwtBearer ("refresh",jwtBearerOptions => options(jwtBearerOptions, "refresh"));
+            .AddJwtBearer("refresh", jwtBearerOptions => options(jwtBearerOptions, "refresh"));
 
 
 

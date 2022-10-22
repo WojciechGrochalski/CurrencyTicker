@@ -62,7 +62,7 @@ namespace angularapi.Services
                             listOfCash.Add(_update.DownloadActualCurrency(iso));
                         }
                         _update.SendCurrencyToDataBase(listOfCash, _context);
-                    }          
+                    }
                 }
             }
         }
