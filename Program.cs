@@ -20,16 +20,6 @@ namespace AngularApi
                  webBuilder.UseStartup<Startup>();
 
              });
-
-        //.ConfigureAppConfiguration((context, config) =>
-        //{
-        //var keyVaultEndpoint = new Uri(Environment.GetEnvironmentVariable("VaultUri"));
-        //config.AddAzureKeyVault(
-        //keyVaultEndpoint,
-        //new DefaultAzureCredential());
-        //})   
-
-
     }
 
 }
